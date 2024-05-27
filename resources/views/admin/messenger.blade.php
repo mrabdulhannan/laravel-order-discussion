@@ -3,6 +3,30 @@
 @section('content')
     <div class="container">
         <h1 class="text-center">Welcome to Order Discussion Board by POPScapes</h1>
+        <style>
+            #fileList {
+                list-style: none;
+                padding: 0;
+                display: flex;
+            }
+
+            .file-item {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+
+            .file-preview {
+                width: 50px;
+                height: 50px;
+                object-fit: cover;
+                margin-right: 10px;
+            }
+
+            .delete-icon {
+                cursor: pointer;
+            }
+        </style>
         <div class="image-container">
             <img src="https://popscapes.art/cdn/shop/files/Florida_01.min_2048x.jpg?v=1695150770" alt="Cropped Image">
         </div>
@@ -22,6 +46,33 @@
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
+            }
+
+            .gallery {
+                display: flex;
+                flex-wrap: wrap;
+            }
+
+            .gallery-item {
+                margin: 10px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .gallery-item img,
+            .gallery-item .file-icon {
+                width: 100px;
+                height: 100px;
+                object-fit: cover;
+            }
+
+            .gallery-item .file-icon {
+                font-size: 50px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border: 1px solid #ccc;
             }
         </style>
         <div class="panel messages-panel">
@@ -238,6 +289,26 @@
                                             <div class="message-text">
                                                 {{ $message['content'] }}
                                             </div>
+                                            @php
+                                                $imageUrlString = $message['image_url'];
+                                                $imageUrls = explode(',', $imageUrlString);
+                                            @endphp
+                                            <div class="gallery">
+                                                @foreach ($imageUrls as $url)
+                                                    @if (($url != '') | null)
+                                                        <a href="{{ $url }}" target="_blank">
+                                                            <div class="gallery-item">
+                                                                @if (preg_match('/\.(jpg|jpeg|png|gif)$/i', $url))
+                                                                    <img src="{{ $url }}" alt="Image preview">
+                                                                @else
+                                                                    <div class="file-icon">📄</div>
+                                                                    <!-- Simple icon for non-image files -->
+                                                                @endif
+                                                            </div>
+                                                        </a>
+                                                    @endif
+                                                @endforeach
+                                            </div>
                                         </div>
                                         <br>
                                     </div>
@@ -255,6 +326,27 @@
                                                 <div class="message-text">
                                                     {{ $message['content'] }}
                                                 </div>
+                                                @php
+                                                    $imageUrlString = $message['image_url'];
+                                                    $imageUrls = explode(',', $imageUrlString);
+                                                @endphp
+                                                <div class="gallery">
+                                                    @foreach ($imageUrls as $url)
+                                                        @if (($url != '') | null)
+                                                            <a href="{{ $url }}" target="_blank">
+                                                                <div class="gallery-item">
+                                                                    @if (preg_match('/\.(jpg|jpeg|png|gif)$/i', $url))
+                                                                        <img src="{{ $url }}"
+                                                                            alt="Image preview">
+                                                                    @else
+                                                                        <div class="file-icon">📄</div>
+                                                                        <!-- Simple icon for non-image files -->
+                                                                    @endif
+                                                                </div>
+                                                            </a>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
                                             </div>
                                         </div>
                                         <br>
@@ -263,10 +355,11 @@
                             @endforeach
                         </div>
                         <div>
+                            <ul id="imageList"></ul>
                             <div class="chat-footer message-area">
                                 <div>
-                                    </div>
-                               
+                                </div>
+
                                 <form action="{{ route('messages.store') }}" method="POST">
                                     @csrf
                                     <div class="form-group" hidden>
@@ -303,31 +396,34 @@
                                         <textarea name="content" id="content" class="form-control" required></textarea>
                                     </div>
                                     <button type="submit" class="btn btn-primary">Submit</button> --}}
-    
+
                                     <textarea name="content" id="content" class="send-message-text" required></textarea>
                                     {{-- <label class="upload-file">
                                         <input type="file" onchange="submitForm('myForm1')" />
                                         <i class="fa fa-paperclip"></i>
                                     </label> --}}
-                                    <button type="submit" class="send-message-button btn-info"> <i class="fa fa-send"></i>
+                                    <button type="submit" class="send-message-button btn-info"> <i
+                                            class="fa fa-send"></i>
                                     </button>
-                                </form>   
+                                </form>
                                 <form id="myForm1" action="{{ route('message.file.store') }}" method="post"
                                     enctype="multipart/form-data">
                                     @csrf
                                     <label class="upload-file">
                                         <input type="file" name="file"
-                                        accept=".pdf, .docx, .xlsx, .ppt, .jpg, .png, .gif, .jpeg" style="display: none" onchange="submitForm('myForm1')"/>
+                                            accept=".pdf, .docx, .xlsx, .ppt, .jpg, .png, .gif, .jpeg"
+                                            style="display: none" onchange="submitForm('myForm1')" />
                                         <i class="fa fa-paperclip"></i>
                                     </label>
                                     {{-- <button type="button" class="btn btn-success mt-3"
                                         >Upload</button> --}}
                                 </form>
-                                
+
                             </div>
-                            
+                            <ul id="fileList"></ul>
+
                         </div>
-                        
+
                     </div>
                 </div>
             </div>
@@ -336,6 +432,8 @@
 @endsection
 
 <script>
+    var imagesURLs = [];
+
     function submitForm(formId) {
         // Find the form element
         const form = document.getElementById(formId);
@@ -370,9 +468,11 @@
                 // Handle the data returned by the controller
                 console.log(data);
                 console.log("response", data.message.file_path);
-                inputElement.value = data.message.file_path;
+                imagesURLs.push(data.message.file_path);
+                inputElement.value = imagesURLs;
                 console.log("element", inputElement);
                 console.log("value", inputElement.value);
+                renderPreviewList();
                 showUploadSuccessMessage(formId);
                 // console.log("Element = ", mcAuthorityLetter);
 
@@ -394,5 +494,37 @@
 
         // // Append the message element to the form
         // form.appendChild(messageElement);
+    }
+
+    function renderPreviewList() {
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = ''; // Clear the existing list
+
+        imagesURLs.forEach((url, index) => {
+            const listItem = document.createElement('li');
+            listItem.classList.add('file-item');
+
+            const filePreview = document.createElement('img');
+            filePreview.classList.add('file-preview');
+            filePreview.src = url;
+            listItem.appendChild(filePreview);
+
+            const deleteIcon = document.createElement('span');
+            deleteIcon.innerHTML = '&#10006;'; // Cross icon
+            deleteIcon.classList.add('delete-icon');
+            deleteIcon.onclick = function() {
+                deleteImage(index);
+            };
+            listItem.appendChild(deleteIcon);
+
+            fileList.appendChild(listItem);
+        });
+    }
+
+    // Function to delete an image from the array
+    function deleteImage(index) {
+        imagesURLs.splice(index, 1);
+        renderPreviewList();
+        console.log("remaining List", imagesURLs);
     }
 </script>
