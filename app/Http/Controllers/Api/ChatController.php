@@ -166,4 +166,30 @@ class ChatController extends Controller
         // Handle the request and return a response
         return response()->json(['message' => $fileData]);
     }
+
+    public function index()
+    {
+        $messages = Message::all();
+        return view('messages.index', compact('messages'));
+    }
+
+    public function destroy($id)
+    {
+        $message = Message::findOrFail($id);
+        $message->delete();
+        return redirect()->route('messages.index')->with('success', 'Message deleted successfully.');
+    }
+
+    public function edit($id)
+    {
+        $message = Message::findOrFail($id);
+        return view('messages.edit', compact('message'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $message = Message::findOrFail($id);
+        $message->update($request->all());
+        return redirect()->route('messages.index')->with('success', 'Message updated successfully.');
+    }
 }

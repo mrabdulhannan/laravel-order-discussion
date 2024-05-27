@@ -25,6 +25,12 @@ Route::get('/messenger', [ChatController::class, 'openMessenger']);
 Route::get('/messages/create', [ChatController::class, 'create'])->name('messages.create');
 Route::post('/messages', [ChatController::class, 'store'])->name('messages.store');
 Route::post('/messageFileUpload', [App\Http\Controllers\Api\ChatController::class, 'storeMessageFiles'])->name('message.file.store');
+
+Route::get('/messages', [ChatController::class, 'index'])->name('messages.index');
+Route::delete('/messages/{id}', [ChatController::class, 'destroy'])->name('messages.destroy');
+Route::get('/messages/{id}/edit', [ChatController::class, 'edit'])->name('messages.edit');
+Route::put('/messages/{id}', [ChatController::class, 'update'])->name('messages.update');
+
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
