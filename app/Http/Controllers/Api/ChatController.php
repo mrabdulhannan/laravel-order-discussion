@@ -144,4 +144,26 @@ class ChatController extends Controller
 
         return $messages;
     }
+
+
+    public function storeMessageFiles(Request $request)
+    {
+        
+        $request->validate([
+            'file' => 'required|mimes:pdf,docx,xlsx,ppt,png,jpg,jpeg,gif|max:10240', // Adjust file types and size as needed
+        ]);
+
+        // $path = $profileImage->store('profile_images', 'public');
+        $path = $request->file('file')->store('uploads', 'public'); // Change 'uploads' to your storage path
+
+        $filePath = $path??"";
+        $fileUrl = asset('storage/' . $filePath);
+
+        $fileData = [
+            'file_path' => $fileUrl ?? "",
+        ];
+        // auth()->user()->resources()->create($fileData);
+        // Handle the request and return a response
+        return response()->json(['message' => $fileData]);
+    }
 }

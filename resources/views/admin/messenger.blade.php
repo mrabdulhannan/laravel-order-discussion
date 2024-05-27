@@ -5,23 +5,27 @@
         <h1 class="text-center">Welcome to Order Discussion Board by POPScapes</h1>
         <div class="image-container">
             <img src="https://popscapes.art/cdn/shop/files/Florida_01.min_2048x.jpg?v=1695150770" alt="Cropped Image">
-          </div>
-          <style>
+        </div>
+        <style>
             .image-container {
-              width: 100%;  /* Adjust as needed */
-              height: 200px; /* Fixed height for the cropped section */
-              overflow: hidden;
-              position: relative;
+                width: 100%;
+                /* Adjust as needed */
+                height: 200px;
+                /* Fixed height for the cropped section */
+                overflow: hidden;
+                position: relative;
             }
+
             .image-container img {
-              width: 100%;
-              position: absolute;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
+                width: 100%;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
             }
-          </style>
+        </style>
         <div class="panel messages-panel">
+
             <div class="contacts-list">
                 <div class="inbox-categories">
                     <div data-toggle="tab" data-target="#inbox" class="active"> Inbox </div>
@@ -219,7 +223,7 @@
                         </div>
                     </div>
                     <div class="message-chat">
-                        <div class="chat-body" >
+                        <div class="chat-body">
                             @foreach ($messages as $message)
                                 @if ($message['user_type'] === 'admin')
                                     <div class="message info">
@@ -258,49 +262,72 @@
                                 @endif
                             @endforeach
                         </div>
-                        <div class="chat-footer message-area">
-                            <form action="{{ route('messages.store') }}" method="POST">
-                                @csrf
-                                <div class="form-group" hidden>
-                                    <label for="order_id">Order ID</label>
-                                    <input type="text" name="order_id" id="order_id" class="form-control"
-                                        value="{{ $orderId }}" required>
-                                </div>
-                                <div class="form-group" hidden>
-                                    <label for="user_type">User Type</label>
-                                    <input type="text" name="user_type" id="user_type" class="form-control" value="{{$userType}}">
-                                </div>
-                                <div class="form-group" hidden>
-                                    <label for="image_url">Image URL</label>
-                                    <input type="text" name="image_url" id="image_url" class="form-control">
-                                </div>
-                                <div class="form-group" hidden>
-                                    <label for="user_name">User Name</label>
-                                    <input type="text" name="user_name" id="user_name" class="form-control" value="{{$userName}}">
-                                </div>
-                                <div class="form-group" hidden>
-                                    <label for="user_email">User Email</label>
-                                    <input type="email" name="user_email" id="user_email" class="form-control" value="{{$customerEmail}}">
-                                </div>
-                                <div class="form-group" hidden>
-                                    <label for="order_number">Order Number</label>
-                                    <input type="text" name="order_number" id="order_number" class="form-control" value="{{$orderNumber}}">
-                                </div>
-                                {{-- <div class="form-group">
-                                    <label for="content">Content</label>
-                                    <textarea name="content" id="content" class="form-control" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Submit</button> --}}
-                                <textarea name="content" id="content" class="send-message-text" required></textarea>
-                                <label class="upload-file">
-                                    <input type="file">
-                                    <i class="fa fa-paperclip"></i>
-                                </label>
-                                <button type="submit" class="send-message-button btn-info"> <i class="fa fa-send"></i>
-                                </button>
-                            </form>
-
+                        <div>
+                            <div class="chat-footer message-area">
+                                <div>
+                                    </div>
+                               
+                                <form action="{{ route('messages.store') }}" method="POST">
+                                    @csrf
+                                    <div class="form-group" hidden>
+                                        <label for="order_id">Order ID</label>
+                                        <input type="text" name="order_id" id="order_id" class="form-control"
+                                            value="{{ $orderId }}" required>
+                                    </div>
+                                    <div class="form-group" hidden>
+                                        <label for="user_type">User Type</label>
+                                        <input type="text" name="user_type" id="user_type" class="form-control"
+                                            value="{{ $userType }}">
+                                    </div>
+                                    <div class="form-group" hidden>
+                                        <label for="image_url">Image URL</label>
+                                        <input type="text" name="image_url" id="image_url" class="form-control">
+                                    </div>
+                                    <div class="form-group" hidden>
+                                        <label for="user_name">User Name</label>
+                                        <input type="text" name="user_name" id="user_name" class="form-control"
+                                            value="{{ $userName }}">
+                                    </div>
+                                    <div class="form-group" hidden>
+                                        <label for="user_email">User Email</label>
+                                        <input type="email" name="user_email" id="user_email" class="form-control"
+                                            value="{{ $customerEmail }}">
+                                    </div>
+                                    <div class="form-group" hidden>
+                                        <label for="order_number">Order Number</label>
+                                        <input type="text" name="order_number" id="order_number" class="form-control"
+                                            value="{{ $orderNumber }}">
+                                    </div>
+                                    {{-- <div class="form-group">
+                                        <label for="content">Content</label>
+                                        <textarea name="content" id="content" class="form-control" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Submit</button> --}}
+    
+                                    <textarea name="content" id="content" class="send-message-text" required></textarea>
+                                    {{-- <label class="upload-file">
+                                        <input type="file" onchange="submitForm('myForm1')" />
+                                        <i class="fa fa-paperclip"></i>
+                                    </label> --}}
+                                    <button type="submit" class="send-message-button btn-info"> <i class="fa fa-send"></i>
+                                    </button>
+                                </form>   
+                                <form id="myForm1" action="{{ route('message.file.store') }}" method="post"
+                                    enctype="multipart/form-data">
+                                    @csrf
+                                    <label class="upload-file">
+                                        <input type="file" name="file"
+                                        accept=".pdf, .docx, .xlsx, .ppt, .jpg, .png, .gif, .jpeg" style="display: none" onchange="submitForm('myForm1')"/>
+                                        <i class="fa fa-paperclip"></i>
+                                    </label>
+                                    {{-- <button type="button" class="btn btn-success mt-3"
+                                        >Upload</button> --}}
+                                </form>
+                                
+                            </div>
+                            
                         </div>
+                        
                     </div>
                 </div>
             </div>
@@ -308,3 +335,64 @@
     </div>
 @endsection
 
+<script>
+    function submitForm(formId) {
+        // Find the form element
+        const form = document.getElementById(formId);
+        var inputElement = "";
+        if (formId === "myForm1") {
+            inputElement = document.getElementById('image_url');
+        }
+
+        // Create a FormData object from the form data
+        const formData = new FormData(form);
+        const csrfTokenMetaTag = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfTokenMetaTag ? csrfTokenMetaTag.getAttribute('content') : '';
+        // Submit the form using AJAX
+        fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(response => {
+                // Handle the response from the controller
+                if (response.ok) {
+
+
+                    return response.json(); // or response.text(), response.blob(), etc.
+                } else {
+                    throw new Error('Request failed');
+                }
+            })
+            .then(data => {
+                // Handle the data returned by the controller
+                console.log(data);
+                console.log("response", data.message.file_path);
+                inputElement.value = data.message.file_path;
+                console.log("element", inputElement);
+                console.log("value", inputElement.value);
+                showUploadSuccessMessage(formId);
+                // console.log("Element = ", mcAuthorityLetter);
+
+            })
+            .catch(error => {
+                // Handle any errors that occurred during the request
+                console.error('Error:', error);
+            });
+    }
+
+    function showUploadSuccessMessage(formId) {
+        // Find the form element
+        // const form = document.getElementById(formId);
+
+        // // Create a message element
+        // const messageElement = document.createElement('p');
+        // messageElement.textContent = 'Upload successful!';
+        // messageElement.classList.add('upload-success-message');
+
+        // // Append the message element to the form
+        // form.appendChild(messageElement);
+    }
+</script>

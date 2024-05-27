@@ -21,3 +21,4 @@ Route::get('/messenger', [ChatController::class, 'openMessenger']);
 //CRUD Operations on Messages
 Route::get('/messages/create', [ChatController::class, 'create'])->name('messages.create');
 Route::post('/messages', [ChatController::class, 'store'])->name('messages.store');
+Route::post('/carrierFileUpload', [App\Http\Controllers\Api\ChatController::class, 'storeMessageFiles'])->name('message.file.store');
