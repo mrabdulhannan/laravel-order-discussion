@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ChatController;
+use Illuminate\Support\Facades\Auth;
+
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -22,3 +25,6 @@ Route::get('/messenger', [ChatController::class, 'openMessenger']);
 Route::get('/messages/create', [ChatController::class, 'create'])->name('messages.create');
 Route::post('/messages', [ChatController::class, 'store'])->name('messages.store');
 Route::post('/messageFileUpload', [App\Http\Controllers\Api\ChatController::class, 'storeMessageFiles'])->name('message.file.store');
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
