@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\FileController;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -36,3 +37,7 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::get('send-email', [ChatController::class, 'sendEmail']);
+
+Route::get('/files', [FileController::class, 'index'])->name('files.index');
+Route::delete('/files/{file}', [FileController::class, 'destroy'])->name('files.destroy');
+
