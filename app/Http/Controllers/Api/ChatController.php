@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Message;
 use App\Http\Controllers\ShopifyAPIController;
 use App\Services\HelperServices;
+use App\Mail\ExampleMail;
+use Illuminate\Support\Facades\Mail;
 
 class ChatController extends Controller
 {
@@ -27,7 +29,7 @@ class ChatController extends Controller
 
     public function sendMessage(Request $request, $order_id)
     {
-        dd($request->all());
+        // dd($request->all());
         // Validate incoming message
         $validatedData = $request->validate([
             'user_type' => 'required|string',
@@ -63,6 +65,7 @@ class ChatController extends Controller
 
         $orderNumber = $order['order_number'];
         $customerEmail = $order['customer']['email'];
+        $customerName = $order['customer']['first_name'];
 
         // dd($orderNumber);
         $messages = $this->getAllMessagesByOrderId($orderId);
@@ -82,7 +85,7 @@ class ChatController extends Controller
         //     'id' => $id,
         //     'shop' => $shop
         // ]);
-        return view('admin.messenger', compact('orderNumber', 'messages', 'orderId', 'userName', 'userType', 'customerEmail'));
+        return view('admin.messenger', compact('orderNumber', 'messages', 'orderId', 'userName', 'userType', 'customerEmail', 'customerName'));
     }
 
     public function create()
@@ -113,6 +116,30 @@ class ChatController extends Controller
             'content',
         ]));
 
+        $userType = $request['user_type'] ?? "";
+        if ($userType == "admin") {
+            $senderName = "Admin";
+            $senderEmail = "admin@gmail.com";
+            $recieverEmail = $request['customer_email'] ?? "";
+            $recieverName = $request['customer_name'] ?? "";
+        } elseif ($userType == "customer") {
+            $senderName = $request['customer_name'] ?? "";
+            $senderEmail = $request['customer_email'] ?? "";;
+            $recieverEmail = "admin@gmail.com" ?? "";
+            $recieverName = "Admin" ?? "";
+        } else {
+            $senderName = "Admin";
+            $senderEmail = "admin@gmail.com";
+            $recieverEmail = $request['customer_email'] ?? "";
+            $recieverName = $request['customer_name'] ?? "";
+        }
+
+        $order_id = $request['order_id'] ?? "";
+        $content =  $request['content'] ?? "";
+        $images = $request['image_url'] ?? "";
+        $orderNumber = $request['order_number'] ?? "";
+
+        $this->sendEmailNotification($order_id, $orderNumber,  $content, $images, $senderName, $senderEmail, $recieverName, $recieverEmail);
         return redirect()->back()->with('success', 'Message created successfully.');
     }
 
@@ -149,7 +176,7 @@ class ChatController extends Controller
     }
 
 
-    public function storeMessageFilesBkp(Request $request)
+    public function storeMessageFilesSingleFile(Request $request)
     {
 
         $request->validate([
@@ -176,7 +203,7 @@ class ChatController extends Controller
             $request->validate([
                 'files.*' => 'required|mimes:pdf,docx,xlsx,ppt,png,jpg,jpeg,gif|max:10240',
             ]);
-    
+
             $filePaths = [];
             if ($request->hasFile('files')) {
                 foreach ($request->file('files') as $file) {
@@ -184,13 +211,13 @@ class ChatController extends Controller
                     $filePaths[] = asset('storage/' . $path);
                 }
             }
-    
+
             return response()->json(['message' => ['file_paths' => $filePaths]]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    
+
 
 
     public function index()
@@ -217,5 +244,35 @@ class ChatController extends Controller
         $message = Message::findOrFail($id);
         $message->update($request->all());
         return redirect()->route('messages.index')->with('success', 'Message updated successfully.');
+    }
+
+    public function sendEmail()
+    {
+        $details = [
+            'title' => 'Mail from Laravel Application',
+            'body' => 'This is a test email sent from a Laravel application.'
+        ];
+
+        Mail::to('recipient@example.com')->send(new ExampleMail($details));
+
+        return "Email sent successfully.";
+    }
+
+    public function sendEmailNotification($order_id, $orderNumber,  $content, $images, $senderName, $senderEmail, $recieverName, $recieverEmail)
+    {
+        $details = [
+            'title' => 'Message for' . $orderNumber,
+            'body' => 'This is a content:' . $content,
+            'orderId' => $order_id,
+            'senderEmail' => $senderEmail,
+            'senderName' => $senderName,
+            'recieverEmail' => $recieverEmail,
+            'images' => $images,
+            'userName' => $recieverName
+        ];
+
+        Mail::to($recieverEmail)->send(new ExampleMail($details));
+
+        return "Email sent successfully.";
     }
 }

@@ -401,6 +401,16 @@
                                         value="{{ $customerEmail }}">
                                 </div>
                                 <div class="form-group" hidden>
+                                    <label for="customer_email">User Email</label>
+                                    <input type="email" name="customer_email" id="customer_email" class="form-control"
+                                        value="{{ $customerEmail }}">
+                                </div>
+                                <div class="form-group" hidden>
+                                    <label for="customer_name">Customer Name</label>
+                                    <input type="text" name="customer_name" id="customer_name" class="form-control"
+                                        value="{{ $customerName }}">
+                                </div>
+                                <div class="form-group" hidden>
                                     <label for="order_number">Order Number</label>
                                     <input type="text" name="order_number" id="order_number" class="form-control"
                                         value="{{ $orderNumber }}">

@@ -34,3 +34,5 @@ Route::put('/messages/{id}', [ChatController::class, 'update'])->name('messages.
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('send-email', [ChatController::class, 'sendEmail']);

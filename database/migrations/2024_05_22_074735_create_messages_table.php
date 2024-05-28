@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('image_url')->nullable();
             $table->string('user_name')->nullable();
             $table->string('user_email')->nullable();
+            $table->string('customer_name')->nullable();
+            $table->string('customer_email')->nullable();
             $table->string('order_number')->nullable();
             $table->text('content');
             $table->timestamps();
