@@ -713,7 +713,7 @@ body {
     width: 35px;
     height: 35px;
     right: 100px;
-    top: 0;
+    top: 10;
     bottom: 0;
     margin: auto;
     border: 1px solid rgba(0, 0, 0, 0.05);
@@ -739,7 +739,7 @@ body {
     right: 150px;
     height: 30px;
     font-size: 20px;
-    top: 0;
+    top: 10;
     bottom: 0;
     margin: auto;
     opacity: 0.25;

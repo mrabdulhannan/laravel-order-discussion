@@ -52,4 +52,105 @@
         </div>
     </div>
 </div>
+
+<form id="myForm1" action="{{ route('message.file.store') }}" method="post" enctype="multipart/form-data">
+    @csrf
+    <div class="upload-btn-wrapper">
+        <button class="btn">Upload files</button>
+        <input type="file" name="files[]" multiple />
+    </div>
+    <button type="button" class="btn btn-success mt-3" onclick="submitForm('myForm1')">Upload</button>
+</form>
+<ul id="fileList"></ul>
+<input type="hidden" id="image_url" name="image_url" />
+
+
+
+<script>
+    var imagesURLs = [];
+
+    function submitForm(formId) {
+        const form = document.getElementById(formId);
+        const inputElement = formId === "myForm1" ? document.getElementById('image_url') : null;
+        const formData = new FormData(form);
+        const csrfTokenMetaTag = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfTokenMetaTag ? csrfTokenMetaTag.getAttribute('content') : '';
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': csrfToken
+            }
+        })
+        .then(response => response.json().catch(() => {
+            // If JSON parsing fails, return response text for debugging
+            return response.text().then(text => { throw new Error(text) });
+        }))
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            if (Array.isArray(data.message.file_paths)) {
+                imagesURLs = imagesURLs.concat(data.message.file_paths);
+            } else {
+                imagesURLs.push(data.message.file_path);
+            }
+            if (inputElement) {
+                inputElement.value = imagesURLs.join(',');
+            }
+            renderPreviewList();
+            showUploadSuccessMessage(formId);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred: ' + error.message);
+        });
+    }
+
+    function showUploadSuccessMessage(formId) {
+        const form = document.getElementById(formId);
+        const messageElement = document.createElement('p');
+        messageElement.textContent = 'Upload successful!';
+        messageElement.classList.add('upload-success-message');
+        form.appendChild(messageElement);
+    }
+
+    function renderPreviewList() {
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = ''; // Clear the existing list
+
+        imagesURLs.forEach((url, index) => {
+            const listItem = document.createElement('li');
+            listItem.classList.add('file-item');
+
+            const filePreview = document.createElement('img');
+            filePreview.classList.add('file-preview');
+            filePreview.src = url;
+            listItem.appendChild(filePreview);
+
+            const deleteIcon = document.createElement('span');
+            deleteIcon.innerHTML = '&#10006;'; // Cross icon
+            deleteIcon.classList.add('delete-icon');
+            deleteIcon.onclick = function() {
+                deleteImage(index);
+            };
+            listItem.appendChild(deleteIcon);
+
+            fileList.appendChild(listItem);
+        });
+    }
+
+    function deleteImage(index) {
+        imagesURLs.splice(index, 1);
+        renderPreviewList();
+        if (document.getElementById('image_url')) {
+            document.getElementById('image_url').value = imagesURLs.join(',');
+        }
+        console.log("remaining List", imagesURLs);
+    }
+</script>
+
+
 @endsection

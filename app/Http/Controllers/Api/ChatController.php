@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Message;
 use App\Http\Controllers\ShopifyAPIController;
 use App\Services\HelperServices;
+
 class ChatController extends Controller
 {
     protected $helperService;
@@ -45,10 +46,10 @@ class ChatController extends Controller
 
     public function openMessenger(Request $request)
     {
-      
+
         $orderData = $this->getOrderId($request);
 
-        
+
         $orderId = $orderData[0];
         $shop = $orderData[1];
         $userName = $orderData[2];
@@ -59,7 +60,7 @@ class ChatController extends Controller
 
         // Extract order number and customer email
         $order = $jsonData['orders'][0];
-        
+
         $orderNumber = $order['order_number'];
         $customerEmail = $order['customer']['email'];
 
@@ -81,7 +82,7 @@ class ChatController extends Controller
         //     'id' => $id,
         //     'shop' => $shop
         // ]);
-        return view('admin.messenger', compact('orderNumber','messages','orderId','userName','userType','customerEmail'));
+        return view('admin.messenger', compact('orderNumber', 'messages', 'orderId', 'userName', 'userType', 'customerEmail'));
     }
 
     public function create()
@@ -98,7 +99,7 @@ class ChatController extends Controller
             'image_url' => 'nullable|string',
             'user_name' => 'nullable|string',
             'user_email' => 'nullable|email',
-            'order_number'=>'nullable|string',
+            'order_number' => 'nullable|string',
             'content' => 'required|string',
         ]);
 
@@ -115,7 +116,8 @@ class ChatController extends Controller
         return redirect()->back()->with('success', 'Message created successfully.');
     }
 
-    public function getOrderId($request){
+    public function getOrderId($request)
+    {
 
         $fullUrl = $request->fullUrl();
 
@@ -134,11 +136,12 @@ class ChatController extends Controller
         $userName = $queryParams['user_name'] ?? "";
         $userType = $queryParams['user_type'] ?? "";
 
-        
+
         return [$id, $shop, $userName, $userType];
     }
 
-    public function getAllMessagesByOrderId($orderId){
+    public function getAllMessagesByOrderId($orderId)
+    {
 
         $messages = Message::where('order_id', $orderId)->orderBy('created_at')->get();
 
@@ -146,9 +149,9 @@ class ChatController extends Controller
     }
 
 
-    public function storeMessageFiles(Request $request)
+    public function storeMessageFilesBkp(Request $request)
     {
-        
+
         $request->validate([
             'file' => 'required|mimes:pdf,docx,xlsx,ppt,png,jpg,jpeg,gif|max:10240', // Adjust file types and size as needed
         ]);
@@ -156,7 +159,7 @@ class ChatController extends Controller
         // $path = $profileImage->store('profile_images', 'public');
         $path = $request->file('file')->store('uploads', 'public'); // Change 'uploads' to your storage path
 
-        $filePath = $path??"";
+        $filePath = $path ?? "";
         $fileUrl = asset('storage/' . $filePath);
 
         $fileData = [
@@ -166,6 +169,29 @@ class ChatController extends Controller
         // Handle the request and return a response
         return response()->json(['message' => $fileData]);
     }
+
+    public function storeMessageFiles(Request $request)
+    {
+        try {
+            $request->validate([
+                'files.*' => 'required|mimes:pdf,docx,xlsx,ppt,png,jpg,jpeg,gif|max:10240',
+            ]);
+    
+            $filePaths = [];
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $file) {
+                    $path = $file->store('uploads', 'public');
+                    $filePaths[] = asset('storage/' . $path);
+                }
+            }
+    
+            return response()->json(['message' => ['file_paths' => $filePaths]]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    
+
 
     public function index()
     {

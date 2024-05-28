@@ -1,12 +1,11 @@
 {{-- @extends('layouts.app') --}}
 @push('stylesheet-page-level')
-    
 @endpush
 <style>
-   body {
-background:#ffff !important;
+    body {
+        background: #ffff !important;
     }
-        </style>
+</style>
 <link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
@@ -84,6 +83,10 @@ background:#ffff !important;
             justify-content: center;
             align-items: center;
             border: 1px solid #ccc;
+        }
+
+        .preview-list {
+            top: 80 !important;
         }
     </style>
     <div class="panel messages-panel">
@@ -366,9 +369,9 @@ background:#ffff !important;
                         @endforeach
                     </div>
                     <div>
-                        <ul id="imageList"></ul>
                         <div class="chat-footer message-area">
                             <div>
+
                             </div>
 
                             <form action="{{ route('messages.store') }}" method="POST">
@@ -402,36 +405,31 @@ background:#ffff !important;
                                     <input type="text" name="order_number" id="order_number" class="form-control"
                                         value="{{ $orderNumber }}">
                                 </div>
-                                {{-- <div class="form-group">
-                                    <label for="content">Content</label>
-                                    <textarea name="content" id="content" class="form-control" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Submit</button> --}}
-
+                                <ul id="fileList"></ul>
                                 <textarea name="content" id="content" class="send-message-text" required></textarea>
-                                {{-- <label class="upload-file">
-                                    <input type="file" onchange="submitForm('myForm1')" />
-                                    <i class="fa fa-paperclip"></i>
-                                </label> --}}
-                                <button type="submit" class="send-message-button btn-info"> <i
-                                        class="fa fa-send"></i>
+
+                                <button id="sendMessageButton" type="submit" class="send-message-button btn-info">
+                                    <i class="fa fa-send"></i>
                                 </button>
                             </form>
                             <form id="myForm1" action="{{ route('message.file.store') }}" method="post"
                                 enctype="multipart/form-data">
                                 @csrf
-                                <label class="upload-file">
-                                    <input type="file" name="file"
+                                <label class="upload-file" id="file-attachment-icon">
+                                    {{-- <input type="file" name="file"
                                         accept=".pdf, .docx, .xlsx, .ppt, .jpg, .png, .gif, .jpeg"
+                                        style="display: none" onchange="submitForm('myForm1')" /> --}}
+                                    <input type="file" name="files[]"
+                                        accept=".pdf, .docx, .xlsx, .ppt, .jpg, .png, .gif, .jpeg" multiple
                                         style="display: none" onchange="submitForm('myForm1')" />
                                     <i class="fa fa-paperclip"></i>
                                 </label>
-                                {{-- <button type="button" class="btn btn-success mt-3"
-                                    >Upload</button> --}}
                             </form>
+                            <div>
 
+                            </div>
                         </div>
-                        <ul id="fileList"></ul>
+
 
                     </div>
 
@@ -441,10 +439,9 @@ background:#ffff !important;
     </div>
 </div>
 @section('content')
-    
 @endsection
 
-<script>
+{{-- <script>
     var imagesURLs = [];
 
     function submitForm(formId) {
@@ -486,7 +483,6 @@ background:#ffff !important;
                 console.log("element", inputElement);
                 console.log("value", inputElement.value);
                 renderPreviewList();
-                showUploadSuccessMessage(formId);
                 // console.log("Element = ", mcAuthorityLetter);
 
             })
@@ -494,19 +490,6 @@ background:#ffff !important;
                 // Handle any errors that occurred during the request
                 console.error('Error:', error);
             });
-    }
-
-    function showUploadSuccessMessage(formId) {
-        // Find the form element
-        // const form = document.getElementById(formId);
-
-        // // Create a message element
-        // const messageElement = document.createElement('p');
-        // messageElement.textContent = 'Upload successful!';
-        // messageElement.classList.add('upload-success-message');
-
-        // // Append the message element to the form
-        // form.appendChild(messageElement);
     }
 
     function renderPreviewList() {
@@ -539,5 +522,109 @@ background:#ffff !important;
         imagesURLs.splice(index, 1);
         renderPreviewList();
         console.log("remaining List", imagesURLs);
+    }
+</script> --}}
+
+<script>
+    var imagesURLs = [];
+    const button = document.getElementById('sendMessageButton');
+    const attachementIcon = document.getElementById('file-attachment-icon');
+
+    function submitForm(formId) {
+        const form = document.getElementById(formId);
+        const inputElement = formId === "myForm1" ? document.getElementById('image_url') : null;
+        const formData = new FormData(form);
+        const csrfTokenMetaTag = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfTokenMetaTag ? csrfTokenMetaTag.getAttribute('content') : '';
+
+        fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(response => response.json().catch(() => {
+                // If JSON parsing fails, return response text for debugging
+                return response.text().then(text => {
+                    throw new Error(text)
+                });
+            }))
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (Array.isArray(data.message.file_paths)) {
+                    imagesURLs = imagesURLs.concat(data.message.file_paths);
+                } else {
+                    imagesURLs.push(data.message.file_path);
+                }
+                if (inputElement) {
+                    inputElement.value = imagesURLs.join(',');
+                }
+                renderPreviewList();
+                showUploadSuccessMessage(formId);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred: ' + error.message);
+            });
+    }
+
+    function showUploadSuccessMessage(formId) {
+        // const form = document.getElementById(formId);
+        // const messageElement = document.createElement('p');
+        // messageElement.textContent = 'Upload successful!';
+        // messageElement.classList.add('upload-success-message');
+        // form.appendChild(messageElement);
+    }
+
+    function renderPreviewList() {
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = ''; // Clear the existing list
+
+        imagesURLs.forEach((url, index) => {
+            const listItem = document.createElement('li');
+            listItem.classList.add('file-item');
+
+            const filePreview = document.createElement('img');
+            filePreview.classList.add('file-preview');
+            filePreview.src = url;
+            listItem.appendChild(filePreview);
+
+            const deleteIcon = document.createElement('span');
+            deleteIcon.innerHTML = '&#10006;'; // Cross icon
+            deleteIcon.classList.add('delete-icon');
+            deleteIcon.onclick = function() {
+                deleteImage(index);
+            };
+            listItem.appendChild(deleteIcon);
+
+            fileList.appendChild(listItem);
+
+            if (fileList.innerHTML != '') {
+                button.classList.add('preview-list');
+                attachementIcon.classList.add('preview-list');
+                
+            }
+            else{
+                console.log("List is Empty");
+            }
+        });
+    }
+
+    function deleteImage(index) {
+        imagesURLs.splice(index, 1);
+        renderPreviewList();
+        if (document.getElementById('image_url')) {
+            document.getElementById('image_url').value = imagesURLs.join(',');
+        }
+        
+        console.log("remaining List", imagesURLs);
+        if (imagesURLs.length === 0) {
+            button.classList.remove('preview-list');
+            attachementIcon.classList.remove('preview-list');
+        }
     }
 </script>
