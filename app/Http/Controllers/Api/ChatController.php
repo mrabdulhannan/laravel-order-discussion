@@ -261,8 +261,8 @@ class ChatController extends Controller
     public function sendEmailNotification($order_id, $orderNumber,  $content, $images, $senderName, $senderEmail, $recieverName, $recieverEmail)
     {
         $details = [
-            'title' => 'Message for' . $orderNumber,
-            'body' => 'This is a content:' . $content,
+            'title' => 'Message about Order Number ' . $orderNumber,
+            'body' =>   $content,
             'orderId' => $order_id,
             'senderEmail' => $senderEmail,
             'senderName' => $senderName,
