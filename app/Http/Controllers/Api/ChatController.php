@@ -61,14 +61,14 @@ class ChatController extends Controller
         $jsonData = json_decode($orderData, true);
 
         // Extract order number and customer email
-        $order = $jsonData['orders'][0];
+        $order = $jsonData['orders'][0]??"";
 
-        $orderNumber = $order['order_number'];
-        $customerEmail = $order['customer']['email'];
-        $customerName = $order['customer']['first_name'];
+        $orderNumber = $order['order_number']??"";
+        $customerEmail = $order['customer']['email']??"";
+        $customerName = $order['customer']['first_name']??"";
 
         // dd($orderNumber);
-        $messages = $this->getAllMessagesByOrderId($orderId);
+        $messages = $this->getAllMessagesByOrderId($orderId)??"";
 
         // $customerDetails = $order['customer'];
         // <p>First Name: {{ $customerDetails['first_name'] }}</p>
